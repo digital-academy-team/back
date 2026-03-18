@@ -1,3 +1,4 @@
+from apps.course.models.category import Category
 from apps.user.models import User
 from common import BaseModel
 from django.db import models
@@ -11,6 +12,7 @@ class Course(BaseModel):
     slug = models.SlugField(max_length=120, unique=True, editable=False)
     base_price = models.PositiveIntegerField()
     discount_price = models.PositiveIntegerField(default=0, blank=True, null=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='course_category')
 
     def save(self, *args, **kwargs):
         if not self.slug:

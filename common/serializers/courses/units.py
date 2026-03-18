@@ -22,7 +22,7 @@ class CourseUnitListSerializer(serializers.ModelSerializer):
 
 
 class CourseUnitCreateSerializer(serializers.ModelSerializer):
-    lessons = LessonCreateSerializer(many=True, read_only=True)
+    lessons = LessonCreateSerializer(many=True, write_only=True)
 
     class Meta:
         model = CourseUnit

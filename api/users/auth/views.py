@@ -127,6 +127,7 @@ class AuthViewSet(viewsets.GenericViewSet):
                     "id": user.id,
                     "username": user.username,
                     "email": user.email,
+                    "role": user.role,
                 },
                 "tokens": {
                     "refresh": str(refresh),

@@ -67,8 +67,6 @@ class BaseLessonSerializer(serializers.ModelSerializer):
 
 
 class LessonCreateSerializer(BaseLessonSerializer):
-    presentation = serializers.FileField(required=False)
-    video = serializers.FileField(required=False)
 
     class Meta:
         model = Lessons
