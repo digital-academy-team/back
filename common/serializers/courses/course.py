@@ -26,11 +26,12 @@ class CourseDetailSerializer(serializers.ModelSerializer):
 
 
 class CourseCreateSerializer(serializers.ModelSerializer):
-    units = serializers.ListField(write_only=True)  # JSON string yoki array
+    units = serializers.ListField(write_only=True)
+    cover_img = serializers.ImageField(required=False)
 
     class Meta:
         model = Course
-        fields = ['title', 'desc', 'base_price', 'discount_price', 'units', 'category']
+        fields = ['cover_img', 'title', 'desc', 'base_price', 'discount_price', 'units', 'category']
 
 
     def create(self, validated_data):

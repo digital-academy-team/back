@@ -6,6 +6,7 @@ from django.utils.text import slugify
 
 
 class Course(BaseModel):
+    cover_img = models.ImageField(upload_to='course/cover_img', blank=True, null=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='course_created_by')
     title = models.CharField(max_length=120)
     desc = models.TextField()
