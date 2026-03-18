@@ -7,7 +7,7 @@ class LessonsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lessons
-        fields = ["title", "video", "presentation", "additional_task"]
+        fields = ["id", "title", "video", "presentation", "additional_task"]
 
 
 

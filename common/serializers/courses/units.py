@@ -1,14 +1,12 @@
 from rest_framework import serializers
 
 from apps.course.models.units import CourseUnit
-from common.serializers.courses.lessons import LessonCreateSerializer, LessonUpdateSerializer
-
-
+from common.serializers.courses.lessons import LessonCreateSerializer, LessonUpdateSerializer, LessonsSerializer
 
 
 class CourseUnitListSerializer(serializers.ModelSerializer):
 
-    lessons = LessonCreateSerializer(many=True)
+    lessons = LessonsSerializer(many=True, read_only=True)
 
     class Meta:
         model = CourseUnit

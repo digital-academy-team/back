@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from apps.course.models.course import Course
 from common.permission import IsCourseTeacherOrAdmin
-from common.serializers.courses.course import CourseCreateSerializer, CourseUpdateSerializer, CourseUserListSerializer
+from common.serializers.courses.course import CourseCreateSerializer, CourseUpdateSerializer, CourseDetailSerializer
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -24,7 +24,11 @@ class CourseViewSet(viewsets.ModelViewSet):
         if self.action in ['update', 'partial_update']:
             return CourseUpdateSerializer
 
-        return CourseUserListSerializer
+        return CourseDetailSerializer
+
+
+    def get_queryset(self):
+        return super().get_queryset().filter(created_by=self.request.user)
 
 
     def create(self, request, *args, **kwargs):
