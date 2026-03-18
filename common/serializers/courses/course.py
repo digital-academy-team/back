@@ -67,6 +67,7 @@ class CourseCreateSerializer(serializers.ModelSerializer):
         return course
 
 
+
 class CourseUpdateSerializer(serializers.ModelSerializer):
     units = CourseUnitUpdateSerializer(many=True)
 
