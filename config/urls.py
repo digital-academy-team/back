@@ -9,14 +9,14 @@ class UserSchemaView(SpectacularAPIView):
     urlconf = 'api.users.urls'
     custom_settings = {
         'TITLE': 'Digital Academy User API',
-        'SERVERS': [{'url': 'http://127.0.0.1:8000/api/users'}],  # ← shu qator
+        'SERVERS': [{'url': f'{settings.SITE_URL}/api/users'}],
     }
 
 class TeacherSchemaView(SpectacularAPIView):
     urlconf = 'api.teachers.urls'
     custom_settings = {
         'TITLE': 'Digital Academy Teacher API',
-        'SERVERS': [{'url': 'http://127.0.0.1:8000/api/teachers'}],  # ← shu qator
+        'SERVERS': [{'url': f'{settings.SITE_URL}/api/teachers'}],
     }
 urlpatterns = [
     path('', welcome, name='index'),
