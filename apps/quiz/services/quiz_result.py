@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from apps.course.models.student import CourseStudent
 from apps.quiz.models import QuizResult
 
 

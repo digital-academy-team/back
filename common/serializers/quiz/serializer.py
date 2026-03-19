@@ -17,14 +17,12 @@ class QuizSubmitSerializer(serializers.Serializer):
 
 
 class QuizListSerializer(ModelSerializer):
-    course_name = serializers.CharField(read_only=True, source='lesson.courses.title')
     questions_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Quiz
         fields = [
                   "id",
-                  "course_name",
                   "title",
                   "description",
                   "is_finished",

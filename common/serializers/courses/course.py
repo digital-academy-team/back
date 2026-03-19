@@ -6,7 +6,7 @@ from apps.course.models.course import Course
 from apps.course.models.lessons import Lessons
 from apps.course.models.units import CourseUnit
 from common.serializers.courses.units import CourseUnitCreateSerializer, CourseUnitUpdateSerializer, \
-    CourseUnitListSerializer
+    CourseUnitListSerializer, StudentCourseUnitListSerializer
 
 
 class CourseUserListSerializer(serializers.ModelSerializer):
@@ -23,6 +23,13 @@ class CourseDetailSerializer(serializers.ModelSerializer):
         model = Course
         fields = ["id", "title", "cover_img", "desc", "base_price", "discount_price", "units"]
 
+
+class StudentCourseListSerializer(serializers.ModelSerializer):
+    units = StudentCourseUnitListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Course
+        fields = ["id", "units"]
 
 
 class CourseCreateSerializer(serializers.ModelSerializer):

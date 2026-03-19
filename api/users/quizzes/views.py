@@ -1,9 +1,12 @@
 from django.db.models import Count
+from django.template.context_processors import request
 from rest_framework import viewsets, status, mixins
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
+from apps.course.models.student import CourseStudent
+from apps.quiz.models import QuizResult
 from apps.quiz.models.quiz import Quiz
 from apps.quiz.services.quiz_result import submit_quiz
 from common.serializers.quiz.serializer import QuizListSerializer, \
@@ -14,6 +17,7 @@ class QuizViewSet(mixins.ListModelMixin,
                   mixins.RetrieveModelMixin,
                   mixins.CreateModelMixin,
                   viewsets.GenericViewSet):
+
     queryset = Quiz.objects.select_related('lesson').annotate(questions_count=Count("questions"))
     http_method_names = ['get', 'post']
 
@@ -27,6 +31,7 @@ class QuizViewSet(mixins.ListModelMixin,
             return QuizSubmitSerializer
 
         return QuizListSerializer
+
 
 
 
@@ -60,6 +65,34 @@ class QuizViewSet(mixins.ListModelMixin,
             answers=answers,
         )
 
+        # 🔥 COURSE PROGRESS LOGIC
+        course = quiz.lesson.course_unit.course
+
+        course_student = CourseStudent.objects.filter(
+            user=request.user,
+            course=course
+        ).first()
+
+        if course_student:
+            # jami quizlar
+            total_quizzes = Quiz.objects.filter(
+                lesson__unit__course=course
+            ).count()
+
+            # user yechgan quizlar (Result modelga qarab o‘zgartir)
+            completed_quizzes = QuizResult.objects.filter(
+                user=request.user,
+                quiz__lesson__unit__course=course
+            ).values('quiz').distinct().count()
+
+            if total_quizzes > 0:
+                progress = (completed_quizzes / total_quizzes) * 100
+            else:
+                progress = 0
+
+            course_student.progress = progress
+            course_student.save()
+
         return Response(
             {
                 "quiz": str(result.quiz.id),
@@ -72,4 +105,3 @@ class QuizViewSet(mixins.ListModelMixin,
             },
             status=status.HTTP_200_OK,
         )
-

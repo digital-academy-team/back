@@ -48,7 +48,7 @@ INSTALLED_APPS = [
 
     #3th apps
     'rest_framework',
-    'drf_yasg',
+    'drf_spectacular',
     'corsheaders',
     'rest_framework_simplejwt',
 
@@ -144,6 +144,8 @@ SIMPLE_JWT = {
 
 
 REST_FRAMEWORK = {
+
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     "DEFAULT_RENDERER_CLASSES": [
         "common.renderers.CustomJSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
@@ -193,21 +195,29 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Digital Academy API',
+    'DESCRIPTION': 'User va Teacher API hujjatlari',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
 
-SWAGGER_SETTINGS = {
-    "SECURITY_DEFINITIONS": {
-        "Bearer": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header",
-            "description": "Type in the *'Value'* input box below:"
-            "**'Bearer &lt;JWT&gt;'**, "
-            "where JWT is the JSON web token you get back when logging in.",
-        },
+    # Bearer Token (Authorize tugmasi) uchun qism:
+    'COMPONENT_SPLIT_PATCH': False,
+    'APPEND_COMPONENTS': {
+        "securitySchemes": {
+            "Bearer": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+            }
+        }
     },
-    "DOC_EXPANSION": False,
+    'SECURITY': [
+        {
+            'Bearer': [],
+        }
+    ],
 }
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
@@ -223,18 +233,18 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-# STATIC_URL = 'static/'
-# MEDIA_URL = '/media/'
-# MEDIA_ROOT = BASE_DIR / 'media'
-#
-# STATIC_ROOT = os.environ.get('STATIC_ROOT', os.path.join(BASE_DIR, 'staticfiles'))
-
-STATIC_URL = '/static/'
-STATIC_ROOT = '/var/www/course_projects/back/static/'
-
+STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/var/www/course_projects/back/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
+STATIC_ROOT = os.environ.get('STATIC_ROOT', os.path.join(BASE_DIR, 'staticfiles'))
+
+# STATIC_URL = '/static/'
+# STATIC_ROOT = '/var/www/course_projects/back/static/'
+#
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = '/var/www/course_projects/back/media/'
+#
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

@@ -21,3 +21,4 @@ PyYAML==6.0.3
 sqlparse==0.5.5
 uritemplate==4.2.0
 uvicorn==0.42.0
+drf-spectacular==0.29.0

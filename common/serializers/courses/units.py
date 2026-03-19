@@ -1,7 +1,16 @@
 from rest_framework import serializers
 
 from apps.course.models.units import CourseUnit
-from common.serializers.courses.lessons import LessonCreateSerializer, LessonUpdateSerializer, LessonsSerializer
+from common.serializers.courses.lessons import LessonCreateSerializer, LessonUpdateSerializer, LessonsSerializer, \
+    StudentLessonsSerializer
+
+
+class StudentCourseUnitListSerializer(serializers.ModelSerializer):
+    lessons = StudentLessonsSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = CourseUnit
+        fields = ["id", "title", "desc", "lessons"]
 
 
 class CourseUnitListSerializer(serializers.ModelSerializer):
