@@ -12,7 +12,7 @@ from common.serializers.courses.units import CourseUnitCreateSerializer, CourseU
 class CourseUserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        fields = ["id", "cover_img", "title", "desc", "base_price", "discount_price"]
+        fields = ["id", "cover_img", "title", "desc", "base_price", "discount_price", "slug"]
 
 
 
@@ -21,7 +21,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
-        fields = ["id", "title", "cover_img", "desc", "base_price", "discount_price", "units"]
+        fields = ["id", "title", "cover_img", "desc", "base_price", "discount_price", "units", "slug"]
 
 
 class StudentCourseListSerializer(serializers.ModelSerializer):

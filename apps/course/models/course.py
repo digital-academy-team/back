@@ -10,7 +10,7 @@ class Course(BaseModel):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='course_created_by')
     title = models.CharField(max_length=120)
     desc = models.TextField()
-    slug = models.SlugField(max_length=120, unique=True, editable=False)
+    slug = models.SlugField(max_length=120, unique=True, editable=False, db_index=True)
     base_price = models.PositiveIntegerField()
     discount_price = models.PositiveIntegerField(default=0, blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='course_category')

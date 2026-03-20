@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from .views import welcome, get_logged_errors
 
+
 class UserSchemaView(SpectacularAPIView):
     urlconf = 'api.users.urls'
     custom_settings = {
@@ -12,12 +13,15 @@ class UserSchemaView(SpectacularAPIView):
         'SERVERS': [{'url': f'{settings.SITE_URL}/api/users'}],
     }
 
+
 class TeacherSchemaView(SpectacularAPIView):
     urlconf = 'api.teachers.urls'
     custom_settings = {
         'TITLE': 'Digital Academy Teacher API',
         'SERVERS': [{'url': f'{settings.SITE_URL}/api/teachers'}],
     }
+
+
 urlpatterns = [
     path('', welcome, name='index'),
     path('logs-all/', get_logged_errors, name='errors'),
