@@ -18,10 +18,19 @@ class CourseUserListSerializer(serializers.ModelSerializer):
 
 class CourseDetailSerializer(serializers.ModelSerializer):
     units = CourseUnitListSerializer(many=True, read_only=True)
+    similar_courses = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
-        fields = ["id", "title", "cover_img", "desc", "base_price", "discount_price", "units", "slug"]
+        fields = ["id", "title", "cover_img", "desc", "base_price", "discount_price", "units", "slug", "similar_courses"]
+
+
+    def get_similar_courses(self, obj):
+        qs = Course.objects.filter(
+            category=obj.category
+        ).exclude(id=obj.id)[:5]
+
+        return CourseUserListSerializer(qs, many=True).data
 
 
 class StudentCourseListSerializer(serializers.ModelSerializer):

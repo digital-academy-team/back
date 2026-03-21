@@ -20,4 +20,3 @@ class CourseViewSet(viewsets.ReadOnlyModelViewSet):
         return CourseUserListSerializer
 
 
-
