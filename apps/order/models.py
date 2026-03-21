@@ -16,8 +16,8 @@ class OrderStatus(TextChoices):
 
 
 class Order(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='enrollments')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
     status = models.CharField(max_length=25, choices=OrderStatus.choices, default=OrderStatus.PAID)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
