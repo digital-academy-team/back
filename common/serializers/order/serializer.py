@@ -8,7 +8,7 @@ class OrderListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ["course_title", "total_amount"]
+        fields = ["course_title", "total_amount", "status"]
 
 
 
