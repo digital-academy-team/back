@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'apps.course',
     'apps.order',
     'apps.comments',
+    'apps.certificate',
 
 
 ]
