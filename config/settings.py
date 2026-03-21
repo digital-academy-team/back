@@ -56,7 +56,8 @@ INSTALLED_APPS = [
     'apps.user',
     'apps.quiz',
     'apps.course',
-    'apps.order'
+    'apps.order',
+    'apps.comments',
 
 
 ]
