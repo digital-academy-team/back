@@ -1,5 +1,6 @@
 from django.db import transaction
 from rest_framework import viewsets, mixins, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.course.models.student import CourseStudent
@@ -13,6 +14,7 @@ class EnrolmentViewSet(mixins.ListModelMixin,
 
     queryset = Order.objects.select_related('course', 'user')
     http_method_names = ['get', 'post']
+    permission_classes = [IsAuthenticated]
 
 
     def get_serializer_class(self):

@@ -9,4 +9,7 @@ urlpatterns = [
     path('courses/', include('api.users.courses.urls')),
     path('category/', include('api.users.category.urls')),
     path('my-courses/', include('api.users.course_student.urls')),
+    path('comments/', include('api.users.comment.urls')),
+    path('certificate/', include('api.users.certificate.urls')),
+
 ]

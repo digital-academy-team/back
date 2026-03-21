@@ -1,27 +1,72 @@
 import json
 
+from django.db.models.functions import Coalesce
+from django.db.models import Avg, Count, Value
 from rest_framework import serializers
-
 from apps.course.models.course import Course
 from apps.course.models.lessons import Lessons
 from apps.course.models.units import CourseUnit
-from common.serializers.courses.units import CourseUnitCreateSerializer, CourseUnitUpdateSerializer, \
+from common.serializers.comments.serializers import CommentSerializer
+from common.serializers.courses.units import CourseUnitUpdateSerializer, \
     CourseUnitListSerializer, StudentCourseUnitListSerializer
 
 
 class CourseUserListSerializer(serializers.ModelSerializer):
+    avg_rating = serializers.FloatField(read_only=True)
+    students_count = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Course
-        fields = ["id", "cover_img", "title", "desc", "base_price", "discount_price", "slug"]
-
+        fields = [
+            "id",
+            "cover_img",
+            "title",
+            "desc",
+            "base_price",
+            "discount_price",
+            "slug",
+            "avg_rating",
+            "students_count",
+        ]
 
 
 class CourseDetailSerializer(serializers.ModelSerializer):
     units = CourseUnitListSerializer(many=True, read_only=True)
+    comments = CommentSerializer(many=True, read_only=True)
+    similar_courses = serializers.SerializerMethodField()
+
+    avg_rating = serializers.FloatField(read_only=True)
+    comments_count = serializers.IntegerField(read_only=True)
+    students_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Course
-        fields = ["id", "title", "cover_img", "desc", "base_price", "discount_price", "units", "slug"]
+        fields = [
+            "id",
+            "title",
+            "cover_img",
+            "desc",
+            "base_price",
+            "discount_price",
+            "units",
+            "slug",
+            "similar_courses",
+            "comments",
+            "avg_rating",
+            "comments_count",
+            "students_count",
+        ]
+
+    def get_similar_courses(self, obj):
+        qs = Course.objects.filter(category=obj.category)\
+            .exclude(id=obj.id)\
+            .annotate(
+                avg_rating=Coalesce(Avg("comments__likes"), Value(0.0)),
+                students_count=Count("enrollments", distinct=True)
+            )[:5]
+        return CourseUserListSerializer(qs, many=True).data
+
+
 
 
 class StudentCourseListSerializer(serializers.ModelSerializer):
