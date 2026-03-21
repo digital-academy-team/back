@@ -17,7 +17,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ["course"]
+        fields = ["course", "total_amount"]
 
 
 
