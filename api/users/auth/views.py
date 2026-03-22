@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from drf_spectacular.utils import extend_schema
 import requests
+from urllib.parse import urlencode
 
 from apps.user.models import User
 from common.serializers.auth.serializer import generate_new_tokens, LoginSerializer, SetPasswordSerializer
@@ -80,12 +81,18 @@ class GoogleAuthCallback(APIView):
         # Paroli bormi yoki yo'qmi (startswith('!') bo'lsa yo'q degani)
         has_password = user.has_usable_password() and not user.password.startswith('!')
 
-        redirect_url = (
-            f"{settings.FRONTEND_URL}/auth/callback"
-            f"?access={tokens['access_token']}"
-            f"&refresh={tokens['refresh_token']}"
-            f"&has_password={str(has_password).lower()}"
-        )
+        role = user.role  # yoki sizning role logikangizdan oling
+
+        params = urlencode({
+            "access": tokens["access_token"],
+            "refresh": tokens["refresh_token"],
+            "has_password": str(has_password).lower(),
+            "user_id": str(user.id),
+            "email": email or "",
+            "role": role,
+        })
+
+        redirect_url = f"{settings.FRONTEND_URL}/auth/callback?{params}"
         return redirect(redirect_url)
 
 
@@ -101,7 +108,7 @@ class LoginAPIView(APIView):
             return Response({
                 "access": tokens['access_token'],
                 "refresh": tokens['refresh_token'],
-                "user": {"email": user.email, "id": user.id}
+                "user": {"email": user.email, "id": user.id, "role": user.role}
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
