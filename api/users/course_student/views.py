@@ -11,10 +11,7 @@ from common.utils.generate_certificate import generate_certificate
 
 
 def _get_full_name(user) -> str:
-    """
-    get_full_name() bo'sh string qaytarishi mumkin — username fallback.
-    Bu 'NoneType has no attribute decode' xatosining sababi.
-    """
+
     name = (user.get_full_name() or "").strip()
     return name if name else user.username
 
@@ -26,7 +23,7 @@ class CourseStudentViewSet(viewsets.ReadOnlyModelViewSet):
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return CourseStudentDetailSerializer
-        return CourseStudentSerializer  # certificate action uchun ham shu qaytadi — ishlatilmaydi
+        return CourseStudentSerializer
 
     def get_queryset(self):
         return super().get_queryset().filter(user=self.request.user)

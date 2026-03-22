@@ -1,6 +1,3 @@
-"""
-Certificate Generator - ReportLab bilan chiroyli PDF sertifikat yaratadi.
-"""
 
 import io
 from datetime import datetime
@@ -18,7 +15,6 @@ DARK_GRAY  = HexColor("#333333")
 
 
 def _safe_str(value) -> str:
-    """None yoki bo'sh qiymatlarni xavfsiz stringga aylantiradi."""
     if value is None:
         return ""
     return str(value).strip()
@@ -55,7 +51,6 @@ def _draw_seal(c, x, y, radius=1.2 * cm):
     c.setStrokeColor(DARK_GOLD)
     c.setLineWidth(1.5)
     c.circle(x, y, radius, fill=1, stroke=1)
-    # ✓ o'rniga oddiy Helvetica harfi — None xatosi yo'q
     c.setFillColor(WHITE)
     c.setFont("Helvetica-Bold", 16)
     c.drawCentredString(x, y - 6, "DA")
@@ -70,7 +65,6 @@ def generate_certificate(
     certificate_id: str = None,
     duration_hours: int = None,
 ) -> bytes:
-    # ── Barcha qiymatlarni xavfsiz stringa aylantiramiz ───────────────────────
     student_name      = _safe_str(student_name)      or "Student"
     course_name       = _safe_str(course_name)       or "Course"
     instructor_name   = _safe_str(instructor_name)   or "Instructor"
@@ -88,12 +82,12 @@ def generate_certificate(
     _draw_background(c, width, height)
     _draw_border(c, width, height)
 
-    # Tashkilot nomi
+
     c.setFillColor(WHITE)
     c.setFont("Helvetica-Bold", 16)
     c.drawCentredString(width / 2, height - 1.3 * cm, organization_name.upper())
 
-    # Sarlavha
+
     c.setFillColor(NAVY)
     c.setFont("Helvetica-Bold", 32)
     c.drawCentredString(width / 2, height - 5 * cm, "CERTIFICATE OF COMPLETION")
@@ -108,7 +102,7 @@ def generate_certificate(
     c.setFont("Helvetica", 14)
     c.drawCentredString(width / 2, height - 6.8 * cm, "This is to certify that")
 
-    # O'quvchi ismi
+
     c.setFillColor(NAVY)
     c.setFont("Helvetica-Bold", 30)
     c.drawCentredString(width / 2, height - 8.5 * cm, student_name)
@@ -124,7 +118,7 @@ def generate_certificate(
     c.drawCentredString(width / 2, height - 10 * cm,
                         "has successfully completed the course")
 
-    # Kurs nomi
+
     c.setFillColor(NAVY)
     c.setFont("Helvetica-Bold", 20)
     c.drawCentredString(width / 2, height - 11.5 * cm, f'"{course_name}"')
@@ -135,10 +129,10 @@ def generate_certificate(
         c.drawCentredString(width / 2, height - 12.5 * cm,
                             f"Total Duration: {duration_hours} hours")
 
-    # Pastki qism
+
     bottom_y = 4 * cm
 
-    # Sana (chap)
+
     c.setFillColor(DARK_GRAY)
     c.setFont("Helvetica", 11)
     c.drawCentredString(width * 0.22, bottom_y + 1.0 * cm, completion_date)
@@ -148,10 +142,10 @@ def generate_certificate(
     c.setFont("Helvetica", 9)
     c.drawCentredString(width * 0.22, bottom_y + 0.2 * cm, "Date of Completion")
 
-    # Muhr (o'rta)
+
     _draw_seal(c, width / 2, bottom_y + 0.9 * cm, radius=1.1 * cm)
 
-    # Imzo (o'ng)
+
     c.setFillColor(NAVY)
     c.setFont("Helvetica-BoldOblique", 13)
     c.drawCentredString(width * 0.78, bottom_y + 1.0 * cm, instructor_name)
@@ -162,7 +156,7 @@ def generate_certificate(
     c.setFillColor(DARK_GRAY)
     c.drawCentredString(width * 0.78, bottom_y + 0.2 * cm, "Instructor Signature")
 
-    # Certificate ID
+
     c.setFillColor(WHITE)
     c.setFont("Helvetica", 9)
     c.drawCentredString(width / 2, 0.8 * cm, f"Certificate ID: {certificate_id}")

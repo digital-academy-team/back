@@ -32,11 +32,11 @@ def get_logged_errors(request):
 
     except json.JSONDecodeError:
         return Response(
-            {"success": False, "message": "Log fayl formati noto‘g‘ri."},
+            {"success": False, "message": "Log file type error"},
             status=500
         )
     except Exception as e:
         return Response(
-            {"success": False, "message": f"Xatolik yuz berdi: {str(e)}"},
+            {"success": False, "message": f"Internal Server Error: {str(e)}"},
             status=500
         )

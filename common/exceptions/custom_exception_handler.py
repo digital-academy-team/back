@@ -8,13 +8,12 @@ def custom_exception_handler(exc, context):
     if response is not None:
         status_code = response.status_code
         error_field = "non_field_errors"
-        first_error = "Noma’lum xatolik"
+        first_error = "Unknown Error"
 
         data = response.data
-        print("ASL ERROR DATA😊🟩🟩", data)
 
         try:
-            # Agar list bo‘lsa
+            # if list
             if isinstance(data, list):
                 first_item = next((item for item in data if item), None)
 
@@ -25,7 +24,7 @@ def custom_exception_handler(exc, context):
                     error_field = "non_field_errors"
                     first_error = str(first_item)
 
-            # Agar dict bo‘lsa
+            # if dict
             elif isinstance(data, dict):
                 if "non_field_errors" in data:
                     error_field = "non_field_errors"
@@ -37,22 +36,20 @@ def custom_exception_handler(exc, context):
 
         except Exception as e:
             error_field = "non_field_errors"
-            first_error = f"Xatolikni o‘qishda muammo: {str(e)}"
+            first_error = f"Error reading: {str(e)}"
 
         response.data = {
             "success": False,
             "status": status_code,
             "error_field": error_field,
-            "error_message": str(first_error) if first_error else "Xatolik yuz berdi",
+            "error_message": str(first_error) if first_error else "Error occurred!",
         }
 
     return response
 
 
 def _extract_error(errors, parent_field=None):
-    """
-    Xatolikdan (field, message) qaytaruvchi helper
-    """
+
     if isinstance(errors, list) and errors:
         first_non_empty = next((e for e in errors if e), None)
         if isinstance(first_non_empty, dict):

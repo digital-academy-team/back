@@ -32,11 +32,11 @@ class BaseLessonSerializer(serializers.ModelSerializer):
 
         if not any(file_name.endswith(ext) for ext in allowed_extensions):
             raise serializers.ValidationError(
-                "Video fayl quyidagi formatlardan biri bo‘lishi kerak: mp4, mov, avi, mkv, webm."
+                "File type must be: mp4, avi, mkv, or webm."
             )
 
         if value.content_type and not value.content_type.startswith("video/"):
-            raise serializers.ValidationError("Yuklangan fayl video bo‘lishi kerak.")
+            raise serializers.ValidationError("File must be video.")
 
         return value
 
@@ -63,12 +63,12 @@ class BaseLessonSerializer(serializers.ModelSerializer):
 
         if not any(file_name.endswith(ext) for ext in allowed_extensions):
             raise serializers.ValidationError(
-                "Presentation fayli pdf, ppt, pptx, doc yoki docx formatda bo‘lishi kerak."
+                "Presentation type must be: pdf, ppt, pptx, doc yoki docx"
             )
 
         if value.content_type and value.content_type not in allowed_content_types:
             raise serializers.ValidationError(
-                "Presentation fayli faqat pdf, ppt, pptx, doc yoki docx bo‘lishi kerak."
+                "Presentation type must be: pdf, ppt, pptx, doc yoki docx"
             )
 
         return value

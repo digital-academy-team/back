@@ -13,10 +13,6 @@ from urllib.parse import urlencode
 from apps.user.models import User
 from common.serializers.auth.serializer import generate_new_tokens, LoginSerializer, SetPasswordSerializer
 
-
-# O'zingizning helper funksiyalaringizni import qiling
-# from common.utils import generate_new_tokens
-
 class GoogleLoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -40,7 +36,7 @@ class GoogleAuthCallback(APIView):
     def get(self, request):
         code = request.GET.get("code")
 
-        # 1. Google Token olish
+        # 1. Google Token
         token_res = requests.post(settings.GOOGLE_TOKEN_URL, data={
             "code": code,
             "client_id": settings.GOOGLE_CLIENT_ID,
@@ -50,7 +46,7 @@ class GoogleAuthCallback(APIView):
         })
         token_json = token_res.json()
 
-        # 2. User ma'lumotlarini olish
+        # 2. collecting user data
         userinfo_res = requests.get(
             settings.GOOGLE_USER_INFO_URL,
             headers={"Authorization": f"Bearer {token_json.get('access_token')}"}
@@ -60,7 +56,7 @@ class GoogleAuthCallback(APIView):
         first_name = userinfo.get("given_name", "")
         last_name = userinfo.get("family_name", "")
 
-        # 3. Userni yaratish/olish
+        # 3. Create User
         user, created = User.objects.get_or_create(
             email=email,
             defaults={
@@ -71,14 +67,15 @@ class GoogleAuthCallback(APIView):
             }
         )
 
-        # AGAR YANGI BO'LSA: Parolni yaroqsiz deb belgilaymiz (unusable)
+        # make password for temporary
         if created:
             user.set_unusable_password()
             user.save()
 
-        # 4. Tokenlarni generatsiya qilish
+        # 4. Generate Token
         tokens = generate_new_tokens(user)
-        # Paroli bormi yoki yo'qmi (startswith('!') bo'lsa yo'q degani)
+
+        # check password is_exist?
         has_password = user.has_usable_password() and not user.password.startswith('!')
 
         role = user.role  # yoki sizning role logikangizdan oling
@@ -120,19 +117,19 @@ class SetInitialPasswordAPIView(APIView):
     def patch(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
 
-        # Parol o'rnatilganligini tekshirish (Unusable bo'lmasa va ! bilan boshlanmasa)
+        # checking password is_real?
         if user.has_usable_password() and not user.password.startswith('!'):
             return Response(
-                {"error": "Parol allaqachon o'rnatilgan. Tiklash xizmatidan foydalaning."},
+                {"error": "You already set up password"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         serializer = SetPasswordSerializer(data=request.data)
         if serializer.is_valid():
             new_password = serializer.validated_data.get('new_password1')
-            user.set_password(new_password)  # Bu metod ! belgisini olib tashlaydi va haqiqiy xesh yaratadi
+            user.set_password(new_password)
             user.save()
 
-            return Response({"message": "Parol muvaffaqiyatli o'rnatildi"}, status=status.HTTP_200_OK)
+            return Response({"message": "Password Successfully set"}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

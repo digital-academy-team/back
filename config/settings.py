@@ -22,12 +22,11 @@ SECRET_KEY = env.str("DJANGO_SECRET", '')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=True)
 
-# Nginx uzatayotgan protokollarni tanish uchun
+# Nginx
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
-# ALLOWED_HOSTS = ['api.yoqubaxmedov.xyz', 'localhost', '127.0.0.1']
 
 ALLOWED_HOSTS = [
     "api.digital-academy.live",
@@ -198,11 +197,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Digital Academy API',
-    'DESCRIPTION': 'User va Teacher API hujjatlari',
+    'DESCRIPTION': 'User, Teacher API ',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
 
-    # ← shu qatorni qo'shing
+
     'SERVERS': [
         {'url': 'https://api.digital-academy.live', 'description': 'Production server'},
     ],
@@ -279,18 +278,18 @@ CORS_ALLOW_HEADERS = [
 
 AUTH_USER_MODEL = 'user.User'
 
-#jazzmin sozlamalari
+#jazzmin settings
 JAZZMIN_SETTINGS = {
     "site_title": "Digital Academy Admin",
     "site_header": "Digital Academy",
     "site_brand": "Digital Academy",
     "welcome_sign": "Xush kelibsiz, admin!",
     "copyright": "© Digital Academy",
-    "show_ui_builder": True,  # UI builder’ni yoqadi
+    "show_ui_builder": True,
 }
 
 JAZZMIN_UI_TWEAKS = {
-    "theme": "cerulean",   # boshqa variantlar: darkly, cerulean, cosmo, minty ...
+    "theme": "cerulean",
     "navbar_fixed": True,
     "sidebar_fixed": True,
     "show_ui_builder": True,

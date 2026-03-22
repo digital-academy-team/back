@@ -19,13 +19,13 @@ class GlobalExceptionLoggingMiddleware:
     def process_exception(self, request, exception):
         status_code = self.get_status_code_from_exception(exception)
 
-        # faqat kutilmagan (500) xatoliklarni logga yozamiz
+        # write only 500 errors
         if status_code not in [400, 401, 403, 404, 429]:
             self.log_unhandled_error(exception, request)
 
         payload = {
             "success": False,
-            "error_message": "Serverda kutilmagan xatolik yuz berdi. Iltimos, keyinroq urinib ko‘ring.",
+            "error_message": "Error occur in the server!",
             "error_detail": str(exception)
         }
         return JsonResponse(payload, status=status_code, json_dumps_params={"ensure_ascii": False})

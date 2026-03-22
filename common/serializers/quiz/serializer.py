@@ -59,10 +59,9 @@ class QuizCreateSerializer(ModelSerializer):
     def create(self, validated_data):
         questions_data = validated_data.pop("questions")
 
-        # Quiz yaratish
+
         quiz = Quiz.objects.create(**validated_data)
 
-        # Har bir question va uning variantlarini yaratish
         for question_data in questions_data:
             variants_data = question_data.pop("variants")
             question = Questions.objects.create(quiz=quiz, **question_data)

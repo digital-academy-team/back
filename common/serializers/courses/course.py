@@ -92,7 +92,7 @@ class CourseCreateSerializer(serializers.ModelSerializer):
 
         units_data = validated_data.pop('units')
 
-        # 🔥 FIX
+
         if isinstance(units_data, list):
             units_data = units_data[0]
 

@@ -33,12 +33,10 @@ class CourseViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         try:
-            print("🔥 REQUEST DATA:", request.data)
-            print("🔥 FILES:", request.FILES)
 
             serializer = self.get_serializer(
                 data=request.data,
-                context={'request': request}  # 🔥 MUHIM
+                context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
 
@@ -47,7 +45,7 @@ class CourseViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except Exception as e:
-            print("❌ ERROR:", str(e))
+            print("ERROR:", str(e))
             print(traceback.format_exc())
 
             return Response(
