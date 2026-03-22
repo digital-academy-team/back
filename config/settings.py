@@ -29,6 +29,7 @@ USE_X_FORWARDED_PORT = True
 
 
 ALLOWED_HOSTS = [
+    "digital-academy.live",
     "api.digital-academy.live",
     "127.0.0.1",
     "localhost",
@@ -265,6 +266,7 @@ CSRF_TRUSTED_ORIGINS = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://digital-academy.live",
     "https://api.digital-academy.live",
     "https://edueyesio.digital-academy.live",
 
