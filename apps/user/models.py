@@ -47,6 +47,7 @@ class User(AbstractUser, BaseModel):
     code_expires_at = models.DateTimeField(null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    google_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
 
     role = models.CharField(max_length=10, choices=UserRoles.choices, default=UserRoles.USER)
 

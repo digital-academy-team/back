@@ -58,7 +58,6 @@ INSTALLED_APPS = [
     'apps.course',
     'apps.order',
     'apps.comments',
-    'apps.certificate',
 
 
 ]
@@ -239,18 +238,18 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-# STATIC_URL = 'static/'
-# MEDIA_URL = '/media/'
-# MEDIA_ROOT = BASE_DIR / 'media'
-#
-# STATIC_ROOT = os.environ.get('STATIC_ROOT', os.path.join(BASE_DIR, 'staticfiles'))
-
-STATIC_URL = '/static/'
-STATIC_ROOT = '/var/www/course_projects/back/static/'
-
+STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/var/www/course_projects/back/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
+STATIC_ROOT = os.environ.get('STATIC_ROOT', os.path.join(BASE_DIR, 'staticfiles'))
+
+# STATIC_URL = '/static/'
+# STATIC_ROOT = '/var/www/course_projects/back/static/'
+#
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = '/var/www/course_projects/back/media/'
+#
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -307,6 +306,15 @@ EMAIL_TIMEOUT = 10
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 
 
+
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
+GOOGLE_AUTH_URL = os.getenv("GOOGLE_AUTH_URL")
+GOOGLE_USER_INFO_URL = os.getenv("GOOGLE_USER_INFO_URL")
+GOOGLE_TOKEN_URL= os.getenv("GOOGLE_TOKEN_URL")
+FRONTEND_URL = os.getenv("FRONTEND_URL")
+GOOGLE_CLIENT_ID2=os.getenv("GOOGLE_CLIENT_ID2")
 
 SITE_URL = os.getenv("SITE_URL")
 
