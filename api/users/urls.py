@@ -11,5 +11,6 @@ urlpatterns = [
     path('my-courses/', include('api.users.course_student.urls')),
     path('comments/', include('api.users.comment.urls')),
     # path('certificate/', include('api.users.certificate.urls')),
-
+    path('leaderboard/', include('api.users.leaderboard.urls')),
+    path('quiz-result/', include('api.users.quiz_result.urls')),
 ]

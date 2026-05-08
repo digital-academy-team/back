@@ -24,6 +24,9 @@ class QuizResult(BaseModel):
         default=QuizResultStatus.FAILED,
     )
 
+    stars = models.PositiveIntegerField(default=0)
+    attempt = models.PositiveIntegerField(default=1)
+
     class Meta:
         db_table = "quiz_result"
 

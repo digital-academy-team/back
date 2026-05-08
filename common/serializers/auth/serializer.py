@@ -13,6 +13,31 @@ def generate_new_tokens(user):
         "refresh_token": str(refresh)
     }
 
+class ProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['id', 'avatar', 'email', 'first_name', 'last_name', "username", "coin", "phone_number"]
+
+
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = [
+              'id',
+              'avatar',
+              'email',
+              'first_name',
+              'last_name',
+              "username",
+              "phone_number"
+        ]
+
+
+
+
+
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=False, allow_blank=True, write_only=True)

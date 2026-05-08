@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'corsheaders',
     'rest_framework_simplejwt',
+    'django_celery_beat',
 
     #locale apps
     'apps.user',
@@ -58,6 +59,7 @@ INSTALLED_APPS = [
     'apps.course',
     'apps.order',
     'apps.comments',
+    'apps.leaderboard',
 
 
 ]
@@ -238,17 +240,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-# STATIC_URL = 'static/'
-# MEDIA_URL = '/media/'
-# MEDIA_ROOT = BASE_DIR / 'media'
-#
-# STATIC_ROOT = os.environ.get('STATIC_ROOT', os.path.join(BASE_DIR, 'staticfiles'))
-
-STATIC_URL = '/static/'
-STATIC_ROOT = '/var/www/course_projects/back/static/'
-
+STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/var/www/course_projects/back/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+STATIC_ROOT = os.environ.get('STATIC_ROOT', os.path.join(BASE_DIR, 'staticfiles'))
+
+# STATIC_URL = '/static/'
+# STATIC_ROOT = '/var/www/course_projects/back/static/'
+#
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = '/var/www/course_projects/back/media/'
 
 
 # Default primary key field type
@@ -307,6 +309,27 @@ EMAIL_TIMEOUT = 10
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 
 
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+
+CELERY_RESULT_BACKEND ='redis://localhost:6379/0'
+
+CELERY_TASK_TRACK_STARTED = True
+
+CELERY_TASK_TIME_LIMIT = 1800
+
+CELERY_TIMEZONE = 'Asia/Tashkent'
+
+CELERY_BEAT_SCHEDULER ='django_celery_beat.schedulers.DatabaseScheduler'
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
 
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")

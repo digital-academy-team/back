@@ -1,17 +1,19 @@
 from django.shortcuts import redirect
 from django.conf import settings
 from django.contrib.auth import authenticate
-from rest_framework import status, serializers
+from rest_framework import status, serializers, generics
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from drf_spectacular.utils import extend_schema
 import requests
 from urllib.parse import urlencode
 
 from apps.user.models import User
-from common.serializers.auth.serializer import generate_new_tokens, LoginSerializer, SetPasswordSerializer
+from common.serializers.auth.serializer import generate_new_tokens, LoginSerializer, SetPasswordSerializer, \
+    ProfileSerializer, ProfileUpdateSerializer
+
 
 class GoogleLoginView(APIView):
     permission_classes = [AllowAny]
@@ -133,3 +135,17 @@ class SetInitialPasswordAPIView(APIView):
             return Response({"message": "Password Successfully set"}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class ProfileRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'patch',]
+
+    def get_serializer_class(self):
+        if self.request.method in ['PATCH']:
+            return ProfileUpdateSerializer
+        return ProfileSerializer
+
+    def get_object(self):
+        return self.request.user

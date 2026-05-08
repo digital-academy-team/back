@@ -27,7 +27,7 @@ class QuizListSerializer(ModelSerializer):
                   "description",
                   "is_finished",
                   "due_at",
-                  "questions_count"
+                  "questions_count",
                   ]
 
 
