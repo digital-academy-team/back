@@ -54,6 +54,7 @@ class User(AbstractUser, BaseModel):
     role = models.CharField(max_length=10, choices=UserRoles.choices, default=UserRoles.USER)
 
 
+
     has_real_password = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
