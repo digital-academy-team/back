@@ -17,7 +17,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env.str("DJANGO_SECRET", '')
+SECRET_KEY = env.str("DJANGO_SECRET", "local-dev-insecure-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=True)
@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'apps.order',
     'apps.comments',
     'apps.leaderboard',
+    'apps.notifications',
 
 
 ]
@@ -168,16 +169,29 @@ REST_FRAMEWORK = {
     ],
 }
 # Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('DB_NAME'),
-        'USER': env('DB_USER'),
-        'PASSWORD': env('DB_PASSWORD'),
-        'HOST': env('DB_HOST'),
-        'PORT': env('DB_PORT'),
+#
+# Production/staging should provide DB_NAME/DB_USER/DB_PASSWORD/DB_HOST/DB_PORT.
+# Local development falls back to SQLite so `python manage.py migrate` works
+# immediately after installing requirements.
+DB_NAME = env.str("DB_NAME", default="")
+if DB_NAME:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': DB_NAME,
+            'USER': env('DB_USER'),
+            'PASSWORD': env('DB_PASSWORD'),
+            'HOST': env('DB_HOST'),
+            'PORT': env('DB_PORT'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -206,6 +220,7 @@ SPECTACULAR_SETTINGS = {
 
 
     'SERVERS': [
+        {'url': 'http://localhost:8000', 'description': 'Local development server'},
         {'url': 'https://api.digital-academy.live', 'description': 'Production server'},
     ],
 
@@ -247,10 +262,10 @@ USE_TZ = True
 # STATIC_ROOT = os.environ.get('STATIC_ROOT', os.path.join(BASE_DIR, 'staticfiles'))
 
 STATIC_URL = '/static/'
-STATIC_ROOT = '/var/www/course_projects/back/static/'
+STATIC_ROOT = env.str("STATIC_ROOT", default=str(BASE_DIR / "staticfiles"))
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/var/www/course_projects/back/media/'
+MEDIA_ROOT = env.str("MEDIA_ROOT", default=str(BASE_DIR / "media"))
 
 
 # Default primary key field type
@@ -261,6 +276,8 @@ UNHANDLED_ERROR_LOG_FILE = BASE_DIR / "logs" / "unhandled_errors.json"
 
 
 CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
     'https://api.digital-academy.live',
     'https://www.digital-academy.live',
 ]
@@ -321,15 +338,23 @@ CELERY_TIMEZONE = 'Asia/Tashkent'
 
 CELERY_BEAT_SCHEDULER ='django_celery_beat.schedulers.DatabaseScheduler'
 
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+if env.bool("USE_REDIS_CACHE", default=False):
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": env.str("REDIS_CACHE_URL", default="redis://127.0.0.1:6379/1"),
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            }
         }
     }
-}
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "digital-academy-local",
+        }
+    }
 
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
@@ -343,6 +368,5 @@ GOOGLE_CLIENT_ID2=os.getenv("GOOGLE_CLIENT_ID2")
 SITE_URL = os.getenv("SITE_URL")
 
 BASE_URL = os.getenv("BASE_BACKEND_URL")
-
 
 

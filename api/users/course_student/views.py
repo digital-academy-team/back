@@ -1,6 +1,6 @@
 from django.core.files.base import ContentFile
 from django.http import HttpResponse
-from rest_framework import viewsets, status
+from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -16,9 +16,10 @@ def _get_full_name(user) -> str:
     return name if name else user.username
 
 
-class CourseStudentViewSet(viewsets.ReadOnlyModelViewSet):
+class CourseStudentViewSet(mixins.UpdateModelMixin, viewsets.ReadOnlyModelViewSet):
     queryset = CourseStudent.objects.select_related('user', 'course', 'course__created_by')
     permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'patch', 'post', 'head', 'options']
 
     def get_serializer_class(self):
         if self.action == 'retrieve':

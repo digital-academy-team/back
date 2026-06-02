@@ -157,20 +157,20 @@ def update_course_progress(user, quiz):
     course_student, _ = CourseStudent.objects.get_or_create(user=user, course=course)
 
     total_lessons = Lessons.objects.filter(course_unit__course=course).count()
+    completed_lectures = list(course_student.completed_lectures or [])
+    lesson_id = str(lesson.id)
 
-    completed_lessons = (
-        QuizResult.objects.filter(
-            user=user,
-            quiz__lesson__course_unit__course=course,
-            status="PASSED",
-        )
-        .values("quiz__lesson")
-        .distinct()
-        .count()
-    )
+    if lesson_id not in completed_lectures:
+        completed_lectures.append(lesson_id)
+
+    completed_lessons = Lessons.objects.filter(
+        course_unit__course=course,
+        id__in=completed_lectures,
+    ).count()
 
     progress = int((completed_lessons / total_lessons) * 100) if total_lessons > 0 else 0
 
+    course_student.completed_lectures = completed_lectures
     course_student.progress = progress
     course_student.status = (
         ProgressStatus.COMPLETED if progress == 100 else ProgressStatus.IN_PROGRESS

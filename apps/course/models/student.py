@@ -16,6 +16,7 @@ class CourseStudent(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='students')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='students')
     progress = models.PositiveIntegerField(default=0)
+    completed_lectures = models.JSONField(default=list, blank=True)
     status = models.CharField(choices=ProgressStatus.choices, default=ProgressStatus.IN_PROGRESS, max_length=20)
     certificate_pdf = models.FileField(upload_to='certificates/', null=True, blank=True)
 
@@ -25,4 +26,3 @@ class CourseStudent(BaseModel):
 
     def __str__(self):
         return f"{self.id}"
-
