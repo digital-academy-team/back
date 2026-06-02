@@ -10,6 +10,10 @@ urlpatterns = [
     path('category/', include('api.users.category.urls')),
     path('my-courses/', include('api.users.course_student.urls')),
     path('comments/', include('api.users.comment.urls')),
-    path('certificate/', include('api.users.certificate.urls')),
-
+    # path('certificate/', include('api.users.certificate.urls')),
+    path('leaderboard/', include('api.users.leaderboard.urls')),
+    path('quiz-result/', include('api.users.quiz_result.urls')),
+    path('notifications/', include('api.users.notifications.urls')),
+    path('discussion/', include('api.users.discussion.urls')),
+    path('', include('api.users.assignments.urls')),
 ]

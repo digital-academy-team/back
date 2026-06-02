@@ -17,19 +17,19 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env.str("DJANGO_SECRET", '')
+SECRET_KEY = env.str("DJANGO_SECRET", "local-dev-insecure-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=True)
 
-# Nginx uzatayotgan protokollarni tanish uchun
+# Nginx
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
-# ALLOWED_HOSTS = ['api.yoqubaxmedov.xyz', 'localhost', '127.0.0.1']
 
 ALLOWED_HOSTS = [
+    "digital-academy.live",
     "api.digital-academy.live",
     "127.0.0.1",
     "localhost",
@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'corsheaders',
     'rest_framework_simplejwt',
+    'django_celery_beat',
 
     #locale apps
     'apps.user',
@@ -58,7 +59,8 @@ INSTALLED_APPS = [
     'apps.course',
     'apps.order',
     'apps.comments',
-    'apps.certificate',
+    'apps.leaderboard',
+    'apps.notifications',
 
 
 ]
@@ -167,16 +169,29 @@ REST_FRAMEWORK = {
     ],
 }
 # Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('DB_NAME'),
-        'USER': env('DB_USER'),
-        'PASSWORD': env('DB_PASSWORD'),
-        'HOST': env('DB_HOST'),
-        'PORT': env('DB_PORT'),
+#
+# Production/staging should provide DB_NAME/DB_USER/DB_PASSWORD/DB_HOST/DB_PORT.
+# Local development falls back to SQLite so `python manage.py migrate` works
+# immediately after installing requirements.
+DB_NAME = env.str("DB_NAME", default="")
+if DB_NAME:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': DB_NAME,
+            'USER': env('DB_USER'),
+            'PASSWORD': env('DB_PASSWORD'),
+            'HOST': env('DB_HOST'),
+            'PORT': env('DB_PORT'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -199,12 +214,13 @@ AUTH_PASSWORD_VALIDATORS = [
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Digital Academy API',
-    'DESCRIPTION': 'User va Teacher API hujjatlari',
+    'DESCRIPTION': 'User, Teacher API ',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
 
-    # ← shu qatorni qo'shing
+
     'SERVERS': [
+        {'url': 'http://localhost:8000', 'description': 'Local development server'},
         {'url': 'https://api.digital-academy.live', 'description': 'Production server'},
     ],
 
@@ -246,10 +262,10 @@ USE_TZ = True
 # STATIC_ROOT = os.environ.get('STATIC_ROOT', os.path.join(BASE_DIR, 'staticfiles'))
 
 STATIC_URL = '/static/'
-STATIC_ROOT = '/var/www/course_projects/back/static/'
+STATIC_ROOT = env.str("STATIC_ROOT", default=str(BASE_DIR / "staticfiles"))
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/var/www/course_projects/back/media/'
+MEDIA_ROOT = env.str("MEDIA_ROOT", default=str(BASE_DIR / "media"))
 
 
 # Default primary key field type
@@ -260,6 +276,8 @@ UNHANDLED_ERROR_LOG_FILE = BASE_DIR / "logs" / "unhandled_errors.json"
 
 
 CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
     'https://api.digital-academy.live',
     'https://www.digital-academy.live',
 ]
@@ -267,6 +285,7 @@ CSRF_TRUSTED_ORIGINS = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://digital-academy.live",
     "https://api.digital-academy.live",
     "https://edueyesio.digital-academy.live",
 
@@ -280,18 +299,18 @@ CORS_ALLOW_HEADERS = [
 
 AUTH_USER_MODEL = 'user.User'
 
-#jazzmin sozlamalari
+#jazzmin settings
 JAZZMIN_SETTINGS = {
     "site_title": "Digital Academy Admin",
     "site_header": "Digital Academy",
     "site_brand": "Digital Academy",
     "welcome_sign": "Xush kelibsiz, admin!",
     "copyright": "© Digital Academy",
-    "show_ui_builder": True,  # UI builder’ni yoqadi
+    "show_ui_builder": True,
 }
 
 JAZZMIN_UI_TWEAKS = {
-    "theme": "cerulean",   # boshqa variantlar: darkly, cerulean, cosmo, minty ...
+    "theme": "cerulean",
     "navbar_fixed": True,
     "sidebar_fixed": True,
     "show_ui_builder": True,
@@ -307,10 +326,47 @@ EMAIL_TIMEOUT = 10
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 
 
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+
+CELERY_RESULT_BACKEND ='redis://localhost:6379/0'
+
+CELERY_TASK_TRACK_STARTED = True
+
+CELERY_TASK_TIME_LIMIT = 1800
+
+CELERY_TIMEZONE = 'Asia/Tashkent'
+
+CELERY_BEAT_SCHEDULER ='django_celery_beat.schedulers.DatabaseScheduler'
+
+if env.bool("USE_REDIS_CACHE", default=False):
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": env.str("REDIS_CACHE_URL", default="redis://127.0.0.1:6379/1"),
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            }
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "digital-academy-local",
+        }
+    }
+
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
+GOOGLE_AUTH_URL = os.getenv("GOOGLE_AUTH_URL")
+GOOGLE_USER_INFO_URL = os.getenv("GOOGLE_USER_INFO_URL")
+GOOGLE_TOKEN_URL= os.getenv("GOOGLE_TOKEN_URL")
+FRONTEND_URL = os.getenv("FRONTEND_URL")
+GOOGLE_CLIENT_ID2=os.getenv("GOOGLE_CLIENT_ID2")
 
 SITE_URL = os.getenv("SITE_URL")
 
 BASE_URL = os.getenv("BASE_BACKEND_URL")
-
 
 

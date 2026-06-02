@@ -1,7 +1,5 @@
 # IDE / editor
 .idea/
-.vscode/
-.DS_Store
 
 # dotenv
 .env
@@ -12,10 +10,6 @@ logs
 venv/
 ENV/
 /.github
-
-# Ignore all migration files but keep __init__.py
-*/migrations/*
-!*/migrations/__init__.py
 
 # Django
 *.pyc
@@ -67,3 +61,6 @@ wheels/
 *.ipynb_checkpoints
 eslatmalar.txt
 .z
+
+# MacOS
+.DS_Store

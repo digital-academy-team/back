@@ -1,167 +1,151 @@
+from django.shortcuts import redirect
 from django.conf import settings
-from django.core.mail import send_mail
-from rest_framework import status, viewsets
-from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.contrib.auth import authenticate
+from rest_framework import status, serializers, generics
+from rest_framework.generics import get_object_or_404
+from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from drf_spectacular.utils import extend_schema
+import requests
+from urllib.parse import urlencode
 
-from apps.user.services.register import cache_register_data, verify_register_code
-from common.serializers.auth.serializer import (
-    RegisterSerializer,
-    VerifySerializer,
-    LoginSerializer,
-    UpdatePasswordSerializer,
-)
+from apps.user.models import User
+from common.serializers.auth.serializer import generate_new_tokens, LoginSerializer, SetPasswordSerializer, \
+    ProfileSerializer, ProfileUpdateSerializer
 
 
-class AuthViewSet(viewsets.GenericViewSet):
+class GoogleLoginView(APIView):
     permission_classes = [AllowAny]
 
-    def get_permissions(self):
-        if self.action == "update_password":
-            return [IsAuthenticated()]
-        return [AllowAny()]
+    def get(self, request):
+        auth_url = (
+            "https://accounts.google.com/o/oauth2/v2/auth"
+            f"?client_id={settings.GOOGLE_CLIENT_ID}"
+            f"&redirect_uri={settings.GOOGLE_REDIRECT_URI}"
+            f"&response_type=code"
+            f"&scope=openid email profile"
+            f"&access_type=offline"
+            f"&prompt=consent"
+        )
+        return redirect(auth_url)
 
-    def get_serializer_class(self):
-        if self.action == "register":
-            return RegisterSerializer
-        elif self.action == "verify_code":
-            return VerifySerializer
-        elif self.action == "update_password":
-            return UpdatePasswordSerializer
-        return LoginSerializer
 
-    @action(
-        detail=False,
-        methods=["post"],
-        url_path="register",
-        permission_classes=[AllowAny],
-    )
-    def register(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+class GoogleAuthCallback(APIView):
+    permission_classes = [AllowAny]
 
-        username = serializer.validated_data["username"]
-        email = serializer.validated_data["email"]
-        password = serializer.validated_data["password"]
+    @extend_schema(exclude=True)
+    def get(self, request):
+        code = request.GET.get("code")
 
-        code = cache_register_data(
-            username=username,
+        # 1. Google Token
+        token_res = requests.post(settings.GOOGLE_TOKEN_URL, data={
+            "code": code,
+            "client_id": settings.GOOGLE_CLIENT_ID,
+            "client_secret": settings.GOOGLE_CLIENT_SECRET,
+            "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+            "grant_type": "authorization_code",
+        })
+        token_json = token_res.json()
+
+        # 2. collecting user data
+        userinfo_res = requests.get(
+            settings.GOOGLE_USER_INFO_URL,
+            headers={"Authorization": f"Bearer {token_json.get('access_token')}"}
+        )
+        userinfo = userinfo_res.json()
+        email = userinfo.get("email")
+        first_name = userinfo.get("given_name", "")
+        last_name = userinfo.get("family_name", "")
+
+        # 3. Create User
+        user, created = User.objects.get_or_create(
             email=email,
-            password=password,
+            defaults={
+                'username': email,
+                'first_name': first_name,
+                'last_name': last_name,
+                'is_active': True,
+            }
         )
 
-        send_mail(
-            subject="Your verification code",
-            message=f"Your verification code is: {code}",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            fail_silently=False,
-        )
+        # make password for temporary
+        if created:
+            user.set_unusable_password()
+            user.save()
 
-        return Response(
-            {
-                "message": "Verification code sent successfully.",
-            },
-            status=status.HTTP_200_OK,
-        )
+        # 4. Generate Token
+        tokens = generate_new_tokens(user)
 
-    @action(
-        detail=False,
-        methods=["post"],
-        url_path="verify-code",
-        permission_classes=[AllowAny],
-    )
-    def verify_code(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        # check password is_exist?
+        has_password = user.has_usable_password() and not user.password.startswith('!')
 
-        email = serializer.validated_data["email"]
-        code = serializer.validated_data["code"]
+        role = user.role  # yoki sizning role logikangizdan oling
 
-        user, error = verify_register_code(email=email, code=code)
+        params = urlencode({
+            "access": tokens["access_token"],
+            "refresh": tokens["refresh_token"],
+            "has_password": str(has_password).lower(),
+            "user_id": str(user.id),
+            "email": email or "",
+            "role": role,
+        })
 
-        if error:
+        redirect_url = f"{settings.FRONTEND_URL}/auth/callback?{params}"
+        return redirect(redirect_url)
+
+
+class LoginAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(request=LoginSerializer)
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            tokens = generate_new_tokens(user)
+            return Response({
+                "access": tokens['access_token'],
+                "refresh": tokens['refresh_token'],
+                "user": {"email": user.email, "id": user.id, "role": user.role}
+            })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SetInitialPasswordAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(request=SetPasswordSerializer)
+    def patch(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+
+        # checking password is_real?
+        if user.has_usable_password() and not user.password.startswith('!'):
             return Response(
-                {"detail": error},
-                status=status.HTTP_400_BAD_REQUEST,
+                {"error": "You already set up password"},
+                status=status.HTTP_400_BAD_REQUEST
             )
 
-        refresh = RefreshToken.for_user(user)
+        serializer = SetPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            new_password = serializer.validated_data.get('new_password1')
+            user.set_password(new_password)
+            user.save()
 
-        return Response(
-            {
-                "message": "User registered successfully.",
-                "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                },
-                "tokens": {
-                    "refresh": str(refresh),
-                    "access": str(refresh.access_token),
-                },
-            },
-            status=status.HTTP_201_CREATED,
-        )
+            return Response({"message": "Password Successfully set"}, status=status.HTTP_200_OK)
 
-    @action(
-        detail=False,
-        methods=["post"],
-        url_path="login",
-        permission_classes=[AllowAny],
-    )
-    def login(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        user = serializer.validated_data["user"]
-        refresh = RefreshToken.for_user(user)
 
-        return Response(
-            {
-                "message": "Login successful.",
-                "requires_password_change": getattr(user, "is_temporary_password", False),
-                "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                    "role": user.role,
-                },
-                "tokens": {
-                    "refresh": str(refresh),
-                    "access": str(refresh.access_token),
-                },
-            },
-            status=status.HTTP_200_OK,
-        )
 
-    @action(
-        detail=False,
-        methods=["post"],
-        url_path="update-password",
-        permission_classes=[IsAuthenticated],
-    )
-    def update_password(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+class ProfileRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'patch',]
 
-        user = serializer.save(user=request.user)
-        refresh = RefreshToken.for_user(user)
+    def get_serializer_class(self):
+        if self.request.method in ['PATCH']:
+            return ProfileUpdateSerializer
+        return ProfileSerializer
 
-        return Response(
-            {
-                "message": "Password updated successfully.",
-                "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                },
-                "tokens": {
-                    "refresh": str(refresh),
-                    "access": str(refresh.access_token),
-                },
-            },
-            status=status.HTTP_200_OK,
-        )
+    def get_object(self):
+        return self.request.user

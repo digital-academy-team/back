@@ -23,6 +23,7 @@ class CourseUnitListSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "desc",
+            "order",
             "lessons",
         ]
 

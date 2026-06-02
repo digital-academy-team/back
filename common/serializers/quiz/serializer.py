@@ -25,9 +25,11 @@ class QuizListSerializer(ModelSerializer):
                   "id",
                   "title",
                   "description",
+                  "time_limit_min",
+                  "show_timer",
                   "is_finished",
                   "due_at",
-                  "questions_count"
+                  "questions_count",
                   ]
 
 
@@ -42,6 +44,8 @@ class QuizDetailSerializer(ModelSerializer):
                   "lesson",
                   "title",
                   "description",
+                  "time_limit_min",
+                  "show_timer",
                   "questions",
                   "is_finished",
                   "due_at"
@@ -54,15 +58,14 @@ class QuizCreateSerializer(ModelSerializer):
 
     class Meta:
         model = Quiz
-        fields = ["lesson", "title", "description", "questions"]
+        fields = ["lesson", "title", "description", "time_limit_min", "show_timer", "questions"]
 
     def create(self, validated_data):
         questions_data = validated_data.pop("questions")
 
-        # Quiz yaratish
+
         quiz = Quiz.objects.create(**validated_data)
 
-        # Har bir question va uning variantlarini yaratish
         for question_data in questions_data:
             variants_data = question_data.pop("variants")
             question = Questions.objects.create(quiz=quiz, **question_data)
@@ -79,7 +82,7 @@ class QuizUpdateSerializer(ModelSerializer):
 
     class Meta:
         model = Quiz
-        fields = ["lesson", "title", "description", "questions"]
+        fields = ["lesson", "title", "description", "time_limit_min", "show_timer", "questions"]
 
     def update(self, instance, validated_data):
 

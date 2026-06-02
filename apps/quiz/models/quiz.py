@@ -8,6 +8,8 @@ class Quiz(BaseModel):
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='quizzes')
     title = models.CharField(max_length=100)
     description = models.TextField()
+    time_limit_min = models.PositiveIntegerField(default=0)
+    show_timer = models.BooleanField(default=True)
     is_finished = models.BooleanField(default=False)
     due_at = models.DateTimeField(blank=True, null=True)
 
@@ -17,4 +19,3 @@ class Quiz(BaseModel):
 
     def __str__(self):
         return self.title
-

@@ -51,7 +51,7 @@ def save_unique_file(uploaded_file, folder: str) -> str:
     saved_path = default_storage.save(filename, ContentFile(uploaded_file.read()))
 
     full_url = f"{settings.MEDIA_URL}{saved_path}"
-    if full_url.startswith("/"):  # agar MEDIA_URL boshlanishida "/" bo‘lsa
+    if full_url.startswith("/"):
         full_url = f"{settings.BASE_URL}{full_url}"
 
     return full_url

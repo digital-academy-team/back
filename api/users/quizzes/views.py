@@ -5,6 +5,7 @@ from rest_framework import viewsets, status, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.order.models import OrderStatus
 from apps.quiz.models.quiz import Quiz
 from apps.quiz.models import QuizResult
 from apps.quiz.services.quiz_result import submit_quiz
@@ -16,7 +17,6 @@ class QuizViewSet(mixins.ListModelMixin,
                   mixins.CreateModelMixin,
                   viewsets.GenericViewSet):
 
-    queryset = Quiz.objects.select_related('lesson').annotate(questions_count=Count("questions"))
     http_method_names = ['get', 'post']
 
     def get_serializer_class(self):
@@ -25,6 +25,17 @@ class QuizViewSet(mixins.ListModelMixin,
         elif self.action == 'submit':
             return QuizSubmitSerializer
         return QuizListSerializer
+
+
+    def get_queryset(self):
+        user = self.request.user
+
+        return Quiz.objects.select_related('lesson').annotate(
+            questions_count=Count("questions")
+        ).filter(
+            lesson__course_unit__course__enrollments__user=user,
+            lesson__course_unit__course__enrollments__status=OrderStatus.PAID
+        ).distinct()
 
     @action(detail=True, methods=["post"], url_path="submit")
     def submit(self, request, pk=None):

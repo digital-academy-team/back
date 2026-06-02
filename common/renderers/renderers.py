@@ -14,7 +14,7 @@ class CustomJSONRenderer(JSONRenderer):
         status_code = response.status_code if response else 200
         success = 200 <= status_code < 300
 
-        # agar allaqachon formatlangan bo‘lsa, shuni qaytaramiz
+        # if Formated
         if isinstance(data, dict) and "success" in data and "status" in data:
             return super().render(data, accepted_media_type, renderer_context)
 
@@ -29,7 +29,7 @@ class CustomJSONRenderer(JSONRenderer):
             return super().render(formatted, accepted_media_type, renderer_context)
 
 
-        # pagination bo‘lsa
+        # If there is pagination
         if isinstance(data, dict) and "results" in data:
             formatted.update(_format_pagination(data))
         else:
