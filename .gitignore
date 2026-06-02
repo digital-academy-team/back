@@ -1,7 +1,5 @@
 # IDE / editor
 .idea/
-.vscode/
-.DS_Store
 
 # dotenv
 .env
