@@ -11,10 +11,6 @@ venv/
 ENV/
 /.github
 
-# Ignore all migration files but keep __init__.py
-*/migrations/*
-!*/migrations/__init__.py
-
 # Django
 *.pyc
 __pycache__/
@@ -65,3 +61,6 @@ wheels/
 *.ipynb_checkpoints
 eslatmalar.txt
 .z
+
+# MacOS
+.DS_Store
